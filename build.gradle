@@ -9,16 +9,20 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath('se.transmode.gradle:gradle-docker:1.2')
 	}
 }
+
+group = "examplecode"
 
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'docker'
 
 jar {
 	baseName = 'demo'
-	version = '0.0.1-SNAPSHOT'
+	version = '0.0.1'
 }
 
 sourceCompatibility = 1.8
@@ -38,4 +42,20 @@ dependencies {
 	compile('org.codehaus.groovy:groovy')
 	runtime('org.postgresql:postgresql')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+task buildDocker(type: Docker, dependsOn: build) {
+	push = false
+	applicationName = jar.baseName
+	dockerfile = file('docker/Dockerfile')
+	doFirst {
+		copy {
+			from jar
+			into stageDir
+		}
+	}
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.3'
 }
